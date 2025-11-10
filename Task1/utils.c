@@ -1,14 +1,14 @@
 #include "converter.h"
 
-#include <stdbool.h>
 #include <getopt.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-ConverterConfig* GetConfig() {
+ConverterConfig *GetConfig() {
   static ConverterConfig config;
   static bool initialized = 0;
 
@@ -16,7 +16,6 @@ ConverterConfig* GetConfig() {
     config.convert_to_bin = false;
     config.convert_to_hex = false;
     config.show_help = false;
-    config.error = false;
     config.input_filename = NULL;
     config.output_filename = NULL;
     config.error_message[0] = '\0';
@@ -27,7 +26,7 @@ ConverterConfig* GetConfig() {
 }
 
 void CleanConfig() {
-  ConverterConfig* config = GetConfig();
+  ConverterConfig *config = GetConfig();
   if (config->output_filename != NULL) {
     free(config->output_filename);
     config->output_filename = NULL;
@@ -36,14 +35,16 @@ void CleanConfig() {
 
 bool GenerateOutputFilename() {
   int func_result = true;
-  ConverterConfig* config = GetConfig();
+  ConverterConfig *config = GetConfig();
   if (config->input_filename != NULL) {
-    size_t total_filename_len = strlen(config->input_filename) + FILE_FORMAT_LEN + 1;
+    size_t total_filename_len =
+        strlen(config->input_filename) + FILE_FORMAT_LEN + 1;
 
     config->output_filename = malloc(total_filename_len);
     if (config->output_filename != NULL) {
-      const char* format = config->convert_to_bin ? "%s.bin" : "%s.hex";
-      snprintf(config->output_filename, total_filename_len, format, config->input_filename);
+      const char *format = config->convert_to_bin ? "%s.bin" : "%s.hex";
+      snprintf(config->output_filename, total_filename_len, format,
+               config->input_filename);
     } else {
       SetError("Memory allocation failed for output filename");
       func_result = false;
@@ -60,48 +61,48 @@ bool ParseArguments(int argc, char **argv) {
   opterr = 0;
   int func_result = true;
   int option_used = false;
-  ConverterConfig* config = GetConfig();
+  ConverterConfig *config = GetConfig();
   int opt;
 
-  while((opt = getopt(argc, argv, "a:b:h")) != -1 && func_result) {
-    switch(opt) {
-      case 'a':
-        if (!option_used) {
-          config->convert_to_bin = true;
-          config->input_filename = optarg;
-          option_used = true;
-        } else {
-          SetError("Only one option can be used at a time");
-          func_result = false;
-        }
-        break;
-      case 'b':
-        if (!option_used) {
-          config->convert_to_hex = true;
-          config->input_filename = optarg;
-          option_used = true;
-        } else {
-          SetError("Only one option can be used at a time");
-          func_result = false;
-        }
-        break;
-      case 'h':
-        if (!option_used) {
-          config->show_help = true;
-          option_used = true;
-        } else {
-          SetError("Only one option can be used at a time");
-          func_result = false;
-        }
-        break;
-      case '?':
-        if (optopt == 'a' || optopt == 'b') {
-          SetError("To use -%c option, you need a filename", optopt);
-        } else {
-          SetError("Unknown option: -%c", optopt);
-        }
+  while ((opt = getopt(argc, argv, "a:b:h")) != -1 && func_result) {
+    switch (opt) {
+    case 'a':
+      if (!option_used) {
+        config->convert_to_bin = true;
+        config->input_filename = optarg;
+        option_used = true;
+      } else {
+        SetError("Only one option can be used at a time");
         func_result = false;
-        break;
+      }
+      break;
+    case 'b':
+      if (!option_used) {
+        config->convert_to_hex = true;
+        config->input_filename = optarg;
+        option_used = true;
+      } else {
+        SetError("Only one option can be used at a time");
+        func_result = false;
+      }
+      break;
+    case 'h':
+      if (!option_used) {
+        config->show_help = true;
+        option_used = true;
+      } else {
+        SetError("Only one option can be used at a time");
+        func_result = false;
+      }
+      break;
+    case '?':
+      if (optopt == 'a' || optopt == 'b') {
+        SetError("To use -%c option, you need a filename", optopt);
+      } else {
+        SetError("Unknown option: -%c", optopt);
+      }
+      func_result = false;
+      break;
     }
   }
 
@@ -138,7 +139,6 @@ void PrintHelp(const char *program_name) {
 
 void SetError(const char *format, ...) {
   ConverterConfig *config = GetConfig();
-  config->error = true;
 
   va_list args;
   va_start(args, format);

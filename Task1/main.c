@@ -1,21 +1,37 @@
 #include "converter.h"
 
+#include <stdio.h>
+
 int main(int argc, char **argv) {
-  ParseArguments(argc, argv);
+  if (!ParseArguments(argc, argv)) {
+    ConverterConfig* config = GetConfig();
+    fprintf(stderr, "Error: %s\n", config->error_message);
+    fprintf(stderr, "Use: '%s -h' for help\n", argv[0]);
+  } else {
+    ConverterConfig* config = GetConfig();
 
-  ConverterConfig* config = GetConfig();
+    if (config->show_help) {
+      PrintHelp(argv[0]);
+    } else {
+      if (!GenerateOutputFilename()) {
+        fprintf(stderr, "Error: %s\n", config->error_message);
+      } else {  
+        bool success;
 
-  if (config->show_help) {
-    PrintHelp(argv[0]);
+        if (config->convert_to_bin) {
+          success = WriteHexToBin(config->input_filename, config->output_filename);
+        } else if (config->convert_to_hex) {
+          success = WriteBinToHex(config->input_filename, config->output_filename);
+        }
+
+        if (!success) {
+          fprintf(stderr, "Error: %s\n", config->error_message);
+        }
+
+        CleanConfig();
+      }
+    }
   }
 
-  GenerateOutputFilename();
-
-  if (config->convert_to_bin) {
-    WriteHexToBin(config->input_filename, config->output_filename);
-  } else if (config->convert_to_hex) {
-    WriteBinToHex(config->input_filename, config->output_filename);
-  }
-
-  CleanConfig();
+  return 0;
 }

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 ConverterConfig* GetConfig() {
   static ConverterConfig config;
@@ -44,9 +45,11 @@ bool GenerateOutputFilename() {
       const char* format = config->convert_to_bin ? "%s.bin" : "%s.hex";
       snprintf(config->output_filename, total_filename_len, format, config->input_filename);
     } else {
+      SetError("Memory allocation failed for output filename");
       func_result = false;
     }
   } else {
+    SetError("Input filename is empty");
     func_result = false;
   }
 
@@ -54,10 +57,12 @@ bool GenerateOutputFilename() {
 }
 
 bool ParseArguments(int argc, char **argv) {
+  opterr = 0;
   int func_result = true;
   int option_used = false;
   ConverterConfig* config = GetConfig();
   int opt;
+
   while((opt = getopt(argc, argv, "a:b:h")) != -1 && func_result) {
     switch(opt) {
       case 'a':
@@ -66,6 +71,7 @@ bool ParseArguments(int argc, char **argv) {
           config->input_filename = optarg;
           option_used = true;
         } else {
+          SetError("Only one option can be used at a time");
           func_result = false;
         }
         break;
@@ -75,6 +81,7 @@ bool ParseArguments(int argc, char **argv) {
           config->input_filename = optarg;
           option_used = true;
         } else {
+          SetError("Only one option can be used at a time");
           func_result = false;
         }
         break;
@@ -83,23 +90,32 @@ bool ParseArguments(int argc, char **argv) {
           config->show_help = true;
           option_used = true;
         } else {
+          SetError("Only one option can be used at a time");
           func_result = false;
         }
         break;
       case '?':
-        func_result = false;
-        break;
-      case ':':
+        if (optopt == 'a' || optopt == 'b') {
+          SetError("To use -%c option, you need a filename", optopt);
+        } else {
+          SetError("Unknown option: -%c", optopt);
+        }
         func_result = false;
         break;
     }
   }
 
-  if (optind < argc) {
+  if (func_result && optind < argc) {
+    if (!option_used && optind < argc) {
+      SetError("Invalid argument format");
+    } else {
+      SetError("Number of arguments is exceeded: %s", argv[optind]);
+    }
     func_result = false;
   }
 
-  if (config->input_filename == NULL) {
+  if (func_result && argc == 1) {
+    SetError("No arguments provided");
     func_result = false;
   }
 
@@ -120,5 +136,12 @@ void PrintHelp(const char *program_name) {
   printf("%s -b file.bin  // create file file.bin.hex\n", program_name);
 }
 
-void SetError() {
+void SetError(const char *format, ...) {
+  ConverterConfig *config = GetConfig();
+  config->error = true;
+
+  va_list args;
+  va_start(args, format);
+  vsnprintf(config->error_message, ERROR_MESSAGE_LEN, format, args);
+  va_end(args);
 }

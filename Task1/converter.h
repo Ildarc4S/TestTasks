@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define ERROR_MESSAGE_LEN 256
+#define ERROR_MESSAGE_LEN 512
 #define BYTE_SIZE 1
 #define BYTE_COUNT 1
 #define FILE_FORMAT_LEN 4 // .bin or .hex
@@ -31,7 +31,7 @@ bool ParseArguments(int argc, char **argv);
 bool GenerateOutputFilename();
 
 void PrintHelp(const char *program_name);
-
+void SetError(const char *format, ...);
 
 int CharToHex(char symbol);
 bool HexToByte(HexPair pair, uint8_t *result_byte);

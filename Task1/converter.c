@@ -6,6 +6,13 @@
 int main(int argc, char **argv) {
   printf("%d\n",ParseArguments(argc, argv));
   printf("%d:%s\n", GetConfig()->convert_to_bin, GetConfig()->input_filename);
+
+  ConverterConfig* config = GetConfig();
+  if (config->convert_to_bin && config->input_filename) {
+    char output_filename[256];
+    snprintf(output_filename, sizeof(output_filename), "%s.bin", config->input_filename);
+    WriteHexToBin(config->input_filename, output_filename);
+  }
 }
 
 ConverterConfig* GetConfig() {
@@ -79,3 +86,78 @@ bool ParseArguments(int argc, char **argv) {
   return func_result;
 }
 
+int CharToHex(char symbol) {
+  int func_result = -1;
+  if ('0' <= symbol && symbol <= '9') {
+    func_result = symbol - '0';
+  } else if ('a' <= symbol && symbol <= 'f') {
+    func_result = symbol - 'a' + 10;
+  } else if ('A' <= symbol && symbol <= 'F') {
+    func_result = symbol - 'A' + 10;
+  }
+
+  return func_result;
+}
+
+bool HexToByte(HexPair pair, unsigned char *result_byte) {
+  bool func_result = false;
+
+  int high_half = CharToHex(pair.high);
+  int low_half = CharToHex(pair.low);
+
+  if (high_half != -1 && low_half != -1) {
+    *result_byte = (high_half << 4) | low_half;
+    func_result = true;
+  }
+
+  return func_result;
+}
+
+HexPair MakeHexPair(char high, char low) {
+  return (HexPair){high, low};
+}
+
+bool WriteHexToBin(const char* input_file_name, const char* output_file_name) {
+  FILE *input_file = fopen(input_file_name, "r");
+  FILE *output_file = fopen(output_file_name, "wb");
+
+  // Cheking file opening
+
+  int col_index = 1;
+  int row_index = 1;
+  int hex_index = 0;
+  HexPair pair = {0};
+
+  int symbol;
+  while ((symbol = fgetc(input_file)) != EOF) {
+    if (symbol == ' ') {
+      col_index++;
+    } else if (symbol == '\n') {
+      row_index++;
+      col_index = 1;
+    } else {
+
+      if (hex_index == 0) {
+        pair.high = symbol;
+      } else {
+        pair.low = symbol;
+      }
+
+      col_index++;
+      hex_index++;
+
+      if (hex_index == 2) {
+        unsigned char byte;
+
+        HexToByte(pair, &byte);
+        fwrite(&byte, BYTE_SIZE, BYTE_COUNT, output_file);
+
+        hex_index = 0;
+        pair = (HexPair){0};
+      }
+    }
+  }
+
+  fclose(input_file);
+  fclose(output_file);
+}

@@ -1,5 +1,5 @@
-#include "converter.h"
-#include <stdio.h>
+#include "converter_core.h"
+#include "utils.h"
 
 int CharToHex(char symbol) {
   int func_result = -1;
@@ -161,12 +161,3 @@ bool ProcessBinToHex(FILE *input_file, FILE *output_file) {
   return func_result;
 }
 
-bool WriteHexToBin(const char *input_filename, const char *output_filename) {
-  return ProcessFiles(input_filename, output_filename, "r", "wb",
-                      ProcessHexToBin);
-}
-
-bool WriteBinToHex(const char *input_filename, const char *output_filename) {
-  return ProcessFiles(input_filename, output_filename, "rb", "w",
-                      ProcessBinToHex);
-}

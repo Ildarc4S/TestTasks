@@ -1,8 +1,8 @@
 #include "converter.h"
+#include "utils.h"
+#include "converter_core.h"
 
 #include <getopt.h>
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -155,11 +155,12 @@ void PrintHelp(const char *program_name) {
   printf("%s -b file.bin  // create file file.bin.hex\n", program_name);
 }
 
-void SetError(const char *format, ...) {
-  ConverterConfig *config = GetConfig();
+bool WriteHexToBin(const char *input_filename, const char *output_filename) {
+  return ProcessFiles(input_filename, output_filename, "r", "wb",
+                      ProcessHexToBin);
+}
 
-  va_list args;
-  va_start(args, format);
-  vsnprintf(config->error_message, ERROR_MESSAGE_LEN, format, args);
-  va_end(args);
+bool WriteBinToHex(const char *input_filename, const char *output_filename) {
+  return ProcessFiles(input_filename, output_filename, "rb", "w",
+                      ProcessBinToHex);
 }

@@ -30,6 +30,7 @@ ConverterConfig *GetConfig();
 void CleanConfig();
 
 bool ParseArguments(int argc, char **argv);
+bool ValidateInputExtension();
 bool GenerateOutputFilename();
 
 void PrintHelp(const char *program_name);

@@ -33,30 +33,6 @@ void CleanConfig() {
   }
 }
 
-bool GenerateOutputFilename() {
-  int func_result = true;
-  ConverterConfig *config = GetConfig();
-  if (config->input_filename != NULL) {
-    size_t total_filename_len =
-        strlen(config->input_filename) + FILE_FORMAT_LEN + 1;
-
-    config->output_filename = malloc(total_filename_len);
-    if (config->output_filename != NULL) {
-      const char *format = config->convert_to_bin ? "%s.bin" : "%s.hex";
-      snprintf(config->output_filename, total_filename_len, format,
-               config->input_filename);
-    } else {
-      SetError("Memory allocation failed for output filename");
-      func_result = false;
-    }
-  } else {
-    SetError("Input filename is empty");
-    func_result = false;
-  }
-
-  return func_result;
-}
-
 bool ParseArguments(int argc, char **argv) {
   opterr = 0;
   int func_result = true;
@@ -117,6 +93,48 @@ bool ParseArguments(int argc, char **argv) {
 
   if (func_result && argc == 1) {
     SetError("No arguments provided");
+    func_result = false;
+  }
+
+  return func_result;
+}
+
+bool ValidateInputExtension() {
+  ConverterConfig *config = GetConfig();
+  bool func_result = false;
+  const char *input_ext = strrchr(config->input_filename, '.');
+
+  if (input_ext == NULL) {
+    SetError("Input file must have an extension");
+  } else if (config->convert_to_bin && strcmp(input_ext, ".hex") != 0) {
+    SetError("Input file for -a option must have '.hex' extension");
+  } else if (config->convert_to_hex && strcmp(input_ext, ".bin") != 0) {
+    SetError("Input file for -b option must have '.bin' extension");
+  } else {
+    func_result = true;
+  }
+
+  return func_result;
+}
+
+bool GenerateOutputFilename() {
+  int func_result = true;
+  ConverterConfig *config = GetConfig();
+  if (config->input_filename != NULL) {
+    size_t total_filename_len =
+        strlen(config->input_filename) + FILE_FORMAT_LEN + 1;
+
+    config->output_filename = malloc(total_filename_len);
+    if (config->output_filename != NULL) {
+      const char *format = config->convert_to_bin ? "%s.bin" : "%s.hex";
+      snprintf(config->output_filename, total_filename_len, format,
+               config->input_filename);
+    } else {
+      SetError("Memory allocation failed for output filename");
+      func_result = false;
+    }
+  } else {
+    SetError("Input filename is empty");
     func_result = false;
   }
 

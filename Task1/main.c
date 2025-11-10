@@ -13,7 +13,9 @@ int main(int argc, char **argv) {
     if (config->show_help) {
       PrintHelp(argv[0]);
     } else {
-      if (!GenerateOutputFilename()) {
+      if (!ValidateInputExtension()) {
+        fprintf(stderr, "Error: %s\n", config->error_message);
+      } else if (!GenerateOutputFilename()) {
         fprintf(stderr, "Error: %s\n", config->error_message);
       } else {
         bool success;

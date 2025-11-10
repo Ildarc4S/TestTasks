@@ -113,6 +113,24 @@ bool HexToByte(HexPair pair, unsigned char *result_byte) {
   return func_result;
 }
 
+unsigned char HexToChar(unsigned char hex_half) {
+  unsigned char func_result = 'A' + high_half -10;
+  if (high_half < 10) {
+    func_result = '0' + high_half;
+  }
+  return func_result;
+}
+
+HexPair ByteToHex(unsigned char byte) {
+  unsigned char high_half = (byte >> 4) & 0x0F;
+  unsigned char low_half = byte & 0x0F;
+
+  return (HexPair) {
+    HexToChar(high_half),
+    HexToChar(low_half)
+  }
+}
+
 HexPair MakeHexPair(char high, char low) {
   return (HexPair){high, low};
 }
@@ -161,3 +179,16 @@ bool WriteHexToBin(const char* input_file_name, const char* output_file_name) {
   fclose(input_file);
   fclose(output_file);
 }
+
+bool WriteBinToHex(const char* input_filename, const char* output_filename) {
+  FILE* input_file = fopen(input_filename, "rb");
+  FILE *output_file = fopen(output_filename, "w");
+
+  unsigned char byte_buffer[512];
+  char hex_buffer[1024];
+  size_t byte_buffer_size;
+  while((byte_buffer_size = fread(byte_buffer, 1, sizeof(byte_buffer), input_file)) != 0) {
+    for (size_t i = 0; i < byte_buffer_size; ++i) {
+      HexPair pair = 
+  }
+} 

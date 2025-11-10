@@ -1,18 +1,29 @@
 #include "converter.h"
 #include <stdbool.h>
 #include <getopt.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char **argv) {
-  printf("%d\n",ParseArguments(argc, argv));
-  printf("%d:%s\n", GetConfig()->convert_to_bin, GetConfig()->input_filename);
+  ParseArguments(argc, argv);
 
   ConverterConfig* config = GetConfig();
-  if (config->convert_to_bin && config->input_filename) {
-    char output_filename[256];
-    snprintf(output_filename, sizeof(output_filename), "%s.bin", config->input_filename);
-    WriteHexToBin(config->input_filename, output_filename);
+
+  if (config->show_help) {
+    PrintHelp(argv[0]);
   }
+
+  GenerateOutputFilename();
+
+  if (config->convert_to_bin) {
+    WriteHexToBin(config->input_filename, config->output_filename);
+  } else if (config->convert_to_hex) {
+    WriteBinToHex(config->input_filename, config->output_filename);
+  }
+
+  CleanConfig();
 }
 
 ConverterConfig* GetConfig() {
@@ -31,6 +42,48 @@ ConverterConfig* GetConfig() {
   }
 
   return &config;
+}
+
+void CleanConfig() {
+  ConverterConfig* config = GetConfig();
+  if (config->output_filename != NULL) {
+    free(config->output_filename);
+    config->output_filename = NULL;
+  }
+}
+
+bool GenerateOutputFilename() {
+  int func_result = true;
+  ConverterConfig* config = GetConfig();
+  if (config->input_filename != NULL) {
+    size_t total_filename_len = strlen(config->input_filename) + FILE_FORMAT_LEN + 1;
+
+    config->output_filename = malloc(total_filename_len);
+    if (config->output_filename != NULL) {
+      const char* format = config->convert_to_bin ? "%s.bin" : "%s.hex";
+      snprintf(config->output_filename, total_filename_len, format, config->input_filename);
+    } else {
+      func_result = false;
+    }
+  } else {
+    func_result = false;
+  }
+
+  return func_result;
+}
+
+void PrintHelp(const char *program_name) {
+  printf("Usage: %s -a FILE | -b FILE\n", program_name);
+  printf("Utility for converting between HEX and BIN formats.\n");
+
+  printf("Options:\n");
+  printf("  -a FILE   hex to bin conversion\n");
+  printf("  -b FILE   bin to hex conversion\n");
+  printf("  -h        show help\n");
+
+  printf("Examples:\n");
+  printf("%s -a file.hex  // create file file.hex.bin\n", program_name);
+  printf("%s -b file.bin  // create file file.bin.hex\n", program_name);
 }
 
 bool ParseArguments(int argc, char **argv) {
@@ -99,7 +152,7 @@ int CharToHex(char symbol) {
   return func_result;
 }
 
-bool HexToByte(HexPair pair, unsigned char *result_byte) {
+bool HexToByte(HexPair pair, uint8_t *result_byte) {
   bool func_result = false;
 
   int high_half = CharToHex(pair.high);
@@ -113,22 +166,22 @@ bool HexToByte(HexPair pair, unsigned char *result_byte) {
   return func_result;
 }
 
-unsigned char HexToChar(unsigned char hex_half) {
-  unsigned char func_result = 'A' + high_half -10;
-  if (high_half < 10) {
-    func_result = '0' + high_half;
+char HexToChar(uint8_t hex_half) {
+  char func_result = 'A' + hex_half - 10;
+  if (hex_half < 10) {
+    func_result = '0' + hex_half;
   }
   return func_result;
 }
 
-HexPair ByteToHex(unsigned char byte) {
-  unsigned char high_half = (byte >> 4) & 0x0F;
-  unsigned char low_half = byte & 0x0F;
+HexPair ByteToHex(uint8_t byte) {
+  uint8_t high_half = (byte >> 4) & 0x0F;
+  uint8_t low_half = byte & 0x0F;
 
   return (HexPair) {
     HexToChar(high_half),
     HexToChar(low_half)
-  }
+  };
 }
 
 HexPair MakeHexPair(char high, char low) {
@@ -141,9 +194,9 @@ bool WriteHexToBin(const char* input_file_name, const char* output_file_name) {
 
   // Cheking file opening
 
-  int col_index = 1;
-  int row_index = 1;
-  int hex_index = 0;
+  size_t col_index = 1;
+  size_t row_index = 1;
+  size_t hex_index = 0;
   HexPair pair = {0};
 
   int symbol;
@@ -165,7 +218,7 @@ bool WriteHexToBin(const char* input_file_name, const char* output_file_name) {
       hex_index++;
 
       if (hex_index == 2) {
-        unsigned char byte;
+        uint8_t byte;
 
         HexToByte(pair, &byte);
         fwrite(&byte, BYTE_SIZE, BYTE_COUNT, output_file);
@@ -184,11 +237,28 @@ bool WriteBinToHex(const char* input_filename, const char* output_filename) {
   FILE* input_file = fopen(input_filename, "rb");
   FILE *output_file = fopen(output_filename, "w");
 
-  unsigned char byte_buffer[512];
+  uint8_t byte_buffer[512];
   char hex_buffer[1024];
-  size_t byte_buffer_size;
-  while((byte_buffer_size = fread(byte_buffer, 1, sizeof(byte_buffer), input_file)) != 0) {
-    for (size_t i = 0; i < byte_buffer_size; ++i) {
-      HexPair pair = 
+
+  size_t hex_index = 0;
+  size_t read_bytes_count;
+  bool fail = false;
+
+  while((read_bytes_count = fread(byte_buffer, 1, sizeof(byte_buffer), input_file)) != 0 && !fail) {
+    for (size_t i = 0; i < read_bytes_count; ++i) {
+      HexPair pair = ByteToHex(byte_buffer[i]);
+      hex_buffer[hex_index++] = pair.high;
+      hex_buffer[hex_index++] = pair.low;
+    }
+
+    if (fwrite(hex_buffer, BYTE_SIZE, hex_index, output_file) != hex_index) {
+      fail = true;
+    }
+    hex_index = 0;
   }
-} 
+
+  fclose(input_file);
+  fclose(output_file);
+
+  return fail;
+}

@@ -1,5 +1,5 @@
 if(WIN32)
-  find_library(Check_LIBRARY NAMES checkDynamic)
+  find_library(Check_LIBRARY NAMES check libcheck.a)
 else()
   find_library(Check_LIBRARY NAMES check)
 endif()
@@ -10,11 +10,16 @@ if(Check_INCLUDE_DIR AND Check_LIBRARY)
   message(STATUS "Check found!")
   add_library(CheckLib INTERFACE IMPORTED)
   target_include_directories(CheckLib INTERFACE ${Check_INCLUDE_DIR})
-  target_link_libraries(CheckLib INTERFACE
-    ${Check_LIBRARY}
-    m
-    subunit
-  )
+
+  if(WIN32)
+    target_link_libraries(CheckLib INTERFACE ${Check_LIBRARY})
+  else()
+    target_link_libraries(CheckLib INTERFACE
+      ${Check_LIBRARY}
+      m
+      subunit
+    )
+  endif()
 
   add_executable(${PROJECT_NAME}_tests
     test_main.c

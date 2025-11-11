@@ -1,6 +1,6 @@
-#include "converter.h"
-
 #include <stdio.h>
+
+#include "converter.h"
 
 int main(int argc, char **argv) {
   if (!ParseArguments(argc, argv)) {

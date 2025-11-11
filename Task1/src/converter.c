@@ -1,11 +1,12 @@
 #include "converter.h"
-#include "converter_core.h"
-#include "utils.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "converter_core.h"
+#include "utils.h"
 
 ConverterConfig *GetConfig() {
   static ConverterConfig config;
@@ -30,6 +31,12 @@ void CleanConfig() {
     free(config->output_filename);
     config->output_filename = NULL;
   }
+
+  config->convert_to_bin = false;
+  config->convert_to_hex = false;
+  config->show_help = false;
+  config->input_filename = NULL;
+  config->error_message[0] = '\0';
 }
 
 bool ParseArguments(int argc, char **argv) {
@@ -42,43 +49,43 @@ bool ParseArguments(int argc, char **argv) {
 
   while ((opt = GetOpt(argc, argv, "a:b:h", &state)) != -1 && func_result) {
     switch (opt) {
-    case 'a':
-      if (!option_used) {
-        config->convert_to_bin = true;
-        config->input_filename = state.optarg;
-        option_used = true;
-      } else {
-        SetError("Only one option can be used at a time");
+      case 'a':
+        if (!option_used) {
+          config->convert_to_bin = true;
+          config->input_filename = state.optarg;
+          option_used = true;
+        } else {
+          SetError("Only one option can be used at a time");
+          func_result = false;
+        }
+        break;
+      case 'b':
+        if (!option_used) {
+          config->convert_to_hex = true;
+          config->input_filename = state.optarg;
+          option_used = true;
+        } else {
+          SetError("Only one option can be used at a time");
+          func_result = false;
+        }
+        break;
+      case 'h':
+        if (!option_used) {
+          config->show_help = true;
+          option_used = true;
+        } else {
+          SetError("Only one option can be used at a time");
+          func_result = false;
+        }
+        break;
+      case '?':
+        if (state.optopt == 'a' || state.optopt == 'b') {
+          SetError("To use -%c option, you need a filename", state.optopt);
+        } else {
+          SetError("Unknown option: -%c", state.optopt);
+        }
         func_result = false;
-      }
-      break;
-    case 'b':
-      if (!option_used) {
-        config->convert_to_hex = true;
-        config->input_filename = state.optarg;
-        option_used = true;
-      } else {
-        SetError("Only one option can be used at a time");
-        func_result = false;
-      }
-      break;
-    case 'h':
-      if (!option_used) {
-        config->show_help = true;
-        option_used = true;
-      } else {
-        SetError("Only one option can be used at a time");
-        func_result = false;
-      }
-      break;
-    case '?':
-      if (state.optopt == 'a' || state.optopt == 'b') {
-        SetError("To use -%c option, you need a filename", state.optopt);
-      } else {
-        SetError("Unknown option: -%c", state.optopt);
-      }
-      func_result = false;
-      break;
+        break;
     }
   }
 
@@ -167,7 +174,7 @@ bool WriteBinToHex(const char *input_filename, const char *output_filename) {
 
 bool PerformConversion() {
   ConverterConfig *config = GetConfig();
-  bool func_result;
+  bool func_result = false;
 
   if (config->convert_to_bin) {
     func_result =

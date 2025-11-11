@@ -17,4 +17,4 @@ int GetOpt(int argc, char **argv, const char *optsring, GetOptState *state);
 
 void SetError(const char *format, ...);
 
-#endif // UTILS_H
+#endif  // UTILS_H

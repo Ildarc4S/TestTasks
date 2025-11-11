@@ -1,9 +1,10 @@
 #include "utils.h"
-#include "converter.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "converter.h"
 
 void SetError(const char *format, ...) {
   ConverterConfig *config = GetConfig();
@@ -20,12 +21,12 @@ GetOptState InitGetOptState() {
 }
 
 int GetOpt(int argc, char **argv, const char *optstring, GetOptState *state) {
-  int func_result = 0;
+  // int func_result = 0;
   state->optarg = NULL;
   state->optopt = 0;
 
   if (state->optind >= argc) {
-    func_result = -1;
+    // func_result = -1;
     return -1;
   }
 

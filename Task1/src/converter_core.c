@@ -1,7 +1,8 @@
 #include "converter_core.h"
+
 #include "utils.h"
 
-int CharToHex(char symbol) {
+int HexCharToValue(char symbol) {
   int func_result = -1;
   if ('0' <= symbol && symbol <= '9') {
     func_result = symbol - '0';
@@ -14,7 +15,7 @@ int CharToHex(char symbol) {
   return func_result;
 }
 
-char HexToChar(uint8_t hex_half) {
+char ValueToHexChar(uint8_t hex_half) {
   char func_result = 'A' + hex_half - 10;
   if (hex_half < 10) {
     func_result = '0' + hex_half;
@@ -25,8 +26,8 @@ char HexToChar(uint8_t hex_half) {
 bool HexToByte(HexPair pair, uint8_t *result_byte) {
   bool func_result = false;
 
-  int high_half = CharToHex(pair.high);
-  int low_half = CharToHex(pair.low);
+  int high_half = HexCharToValue(pair.high);
+  int low_half = HexCharToValue(pair.low);
 
   if (high_half != -1 && low_half != -1) {
     *result_byte = (high_half << 4) | low_half;
@@ -40,7 +41,7 @@ HexPair ByteToHex(uint8_t byte) {
   uint8_t high_half = (byte >> 4) & 0x0F;
   uint8_t low_half = byte & 0x0F;
 
-  return (HexPair){HexToChar(high_half), HexToChar(low_half)};
+  return (HexPair){ValueToHexChar(high_half), ValueToHexChar(low_half)};
 }
 
 bool ProcessFiles(const char *input_filename, const char *output_filename,
@@ -109,7 +110,6 @@ bool ProcessHexToBin(FILE *input_file, FILE *output_file) {
       row_index++;
       col_index = 1;
     } else {
-
       if (hex_index == 0) {
         pair.high = symbol;
       } else {
@@ -128,7 +128,7 @@ bool ProcessHexToBin(FILE *input_file, FILE *output_file) {
     }
   }
 
-  if (!func_result && hex_index == 1) {
+  if (func_result && hex_index == 1) {
     SetError("Unpair HEX character at end of input file");
     func_result = false;
   }

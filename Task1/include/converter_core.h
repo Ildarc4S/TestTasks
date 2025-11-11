@@ -15,8 +15,8 @@ typedef struct {
 
 typedef bool (*ProcessFunc)(FILE *input_file, FILE *output_file);
 
-int CharToHex(char symbol);
-char HexToChar(uint8_t hex_half);
+int HexCharToValue(char symbol);
+char ValueToHexChar(uint8_t hex_half);
 bool HexToByte(HexPair pair, uint8_t *result_byte);
 HexPair ByteToHex(uint8_t byte);
 
@@ -30,4 +30,4 @@ bool ProcessFiles(const char *input_filename, const char *output_filename,
 bool ProcessHexToBin(FILE *input_file, FILE *output_file);
 bool ProcessBinToHex(FILE *input_file, FILE *output_file);
 
-#endif // CONVERTER_CORE_H
+#endif  // CONVERTER_CORE_H

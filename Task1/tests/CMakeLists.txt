@@ -1,5 +1,10 @@
+if(WIN32)
+  find_library(Check_LIBRARY NAMES checkDynamic)
+else()
+  find_library(Check_LIBRARY NAMES check)
+endif()
+
 find_path(Check_INCLUDE_DIR check.h)
-find_library(Check_LIBRARY NAMES check)
 
 if(Check_INCLUDE_DIR AND Check_LIBRARY)
   message(STATUS "Check found!")

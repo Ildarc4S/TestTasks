@@ -18,20 +18,9 @@ int main(int argc, char **argv) {
       } else if (!GenerateOutputFilename()) {
         fprintf(stderr, "Error: %s\n", config->error_message);
       } else {
-        bool success;
-
-        if (config->convert_to_bin) {
-          success =
-              WriteHexToBin(config->input_filename, config->output_filename);
-        } else if (config->convert_to_hex) {
-          success =
-              WriteBinToHex(config->input_filename, config->output_filename);
-        }
-
-        if (!success) {
+        if (!PerformConversion()) {
           fprintf(stderr, "Error: %s\n", config->error_message);
         }
-
         CleanConfig();
       }
     }

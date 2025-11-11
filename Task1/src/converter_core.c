@@ -160,4 +160,3 @@ bool ProcessBinToHex(FILE *input_file, FILE *output_file) {
 
   return func_result;
 }
-

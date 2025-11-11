@@ -21,6 +21,7 @@ bool ParseArguments(int argc, char **argv);
 bool ValidateInputExtension();
 bool GenerateOutputFilename();
 void PrintHelp(const char *program_name);
+bool PerformConversion();
 
 bool WriteHexToBin(const char *input_file, const char *output_file);
 bool WriteBinToHex(const char *input_file, const char *output_file);

@@ -1,6 +1,6 @@
 #include "converter.h"
-#include "utils.h"
 #include "converter_core.h"
+#include "utils.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -163,4 +163,19 @@ bool WriteHexToBin(const char *input_filename, const char *output_filename) {
 bool WriteBinToHex(const char *input_filename, const char *output_filename) {
   return ProcessFiles(input_filename, output_filename, "rb", "w",
                       ProcessBinToHex);
+}
+
+bool PerformConversion() {
+  ConverterConfig *config = GetConfig();
+  bool func_result;
+
+  if (config->convert_to_bin) {
+    func_result =
+        WriteHexToBin(config->input_filename, config->output_filename);
+  } else if (config->convert_to_hex) {
+    func_result =
+        WriteBinToHex(config->input_filename, config->output_filename);
+  }
+
+  return func_result;
 }

@@ -1,5 +1,5 @@
-#include "converter.h"
 #include "utils.h"
+#include "converter.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -15,10 +15,11 @@ void SetError(const char *format, ...) {
 }
 
 GetOptState InitGetOptState() {
-  return (GetOptState){NULL, GETOPT_INITIAL_OPTIND, GETOPT_INITIAL_OPTPOS, GETOPT_INITIAL_OPTOPT};
+  return (GetOptState){NULL, GETOPT_INITIAL_OPTIND, GETOPT_INITIAL_OPTPOS,
+                       GETOPT_INITIAL_OPTOPT};
 }
 
-int GetOpt(int argc, char **argv, const char* optstring, GetOptState *state) {
+int GetOpt(int argc, char **argv, const char *optstring, GetOptState *state) {
   int func_result = 0;
   state->optarg = NULL;
   state->optopt = 0;
@@ -44,7 +45,7 @@ int GetOpt(int argc, char **argv, const char* optstring, GetOptState *state) {
 
   if (pos[1] == ':') {
     if (current_arg[state->optpos + 1] != '\0') {
-      state->optarg= &current_arg[state->optpos + 1];
+      state->optarg = &current_arg[state->optpos + 1];
       state->optind++;
       state->optpos = 1;
     } else {
@@ -60,7 +61,7 @@ int GetOpt(int argc, char **argv, const char* optstring, GetOptState *state) {
       state->optpos++;
     } else {
       state->optind++;
-      state->optpos = 1; 
+      state->optpos = 1;
     }
   }
   return optchar;

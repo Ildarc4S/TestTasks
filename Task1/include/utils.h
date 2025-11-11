@@ -13,6 +13,8 @@ typedef struct {
 #define GETOPT_INITIAL_OPTOPT 0
 
 GetOptState InitGetOptState();
+void HandleOption(int argc, char **argv, const char *pos, char *current_arg,
+                  GetOptState *state, int *func_result);
 int GetOpt(int argc, char **argv, const char *optsring, GetOptState *state);
 
 void SetError(const char *format, ...);

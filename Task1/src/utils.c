@@ -20,42 +20,23 @@ GetOptState InitGetOptState() {
                        GETOPT_INITIAL_OPTOPT};
 }
 
-int GetOpt(int argc, char **argv, const char *optstring, GetOptState *state) {
-  // int func_result = 0;
-  state->optarg = NULL;
-  state->optopt = 0;
-
-  if (state->optind >= argc) {
-    // func_result = -1;
-    return -1;
-  }
-
-  char *current_arg = argv[state->optind];
-
-  if (current_arg[0] != '-' || current_arg[1] == '\0') {
-    return -1;
-  }
-
-  char optchar = current_arg[state->optpos];
-  state->optopt = optchar;
-
-  const char *pos = strchr(optstring, optchar);
+void HandleOption(int argc, char **argv, const char *pos, char *current_arg,
+                  GetOptState *state, int *func_result) {
   if (pos == NULL) {
-    return '?';
-  }
-
-  if (pos[1] == ':') {
+    *func_result = '?';
+  } else if (pos[1] == ':') {
     if (current_arg[state->optpos + 1] != '\0') {
       state->optarg = &current_arg[state->optpos + 1];
       state->optind++;
       state->optpos = 1;
     } else {
       if (state->optind + 1 >= argc) {
-        return '?';
+        *func_result = '?';
+      } else {
+        state->optarg = argv[state->optind + 1];
+        state->optind += 2;
+        state->optpos = 1;
       }
-      state->optarg = argv[state->optind + 1];
-      state->optind += 2;
-      state->optpos = 1;
     }
   } else {
     if (current_arg[state->optpos + 1] != '\0') {
@@ -65,5 +46,29 @@ int GetOpt(int argc, char **argv, const char *optstring, GetOptState *state) {
       state->optpos = 1;
     }
   }
-  return optchar;
+}
+
+int GetOpt(int argc, char **argv, const char *optstring, GetOptState *state) {
+  int func_result = 0;
+  state->optarg = NULL;
+  state->optopt = 0;
+
+  if (state->optind >= argc) {
+    func_result = -1;
+  } else {
+    char *current_arg = argv[state->optind];
+
+    if (current_arg[0] != '-' || current_arg[1] == '\0') {
+      func_result = -1;
+    } else {
+      char optchar = current_arg[state->optpos];
+      state->optopt = optchar;
+      func_result = optchar;
+
+      const char *pos = strchr(optstring, optchar);
+      HandleOption(argc, argv, pos, current_arg, state, &func_result);
+    }
+  }
+
+  return func_result;
 }

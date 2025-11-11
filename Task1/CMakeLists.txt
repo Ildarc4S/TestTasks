@@ -22,3 +22,7 @@ elseif(CMAKE_C_COMPILE_ID STREQUAL "MSVC")
     /W4 /WX
   )
 endif()
+
+enable_testing()
+
+add_subdirectory(tests)

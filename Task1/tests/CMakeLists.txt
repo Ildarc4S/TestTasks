@@ -1,0 +1,11 @@
+find_path(Check_INCLUDE_DIR check.h)
+find_library(Check_LIBRARY NAMES check)
+
+if(Check_INCLUDE_DIR AND Check_LIBRARY)
+  message(STATUS "Check found!")
+  add_library(CheckLib INTERFACE IMPORTED)
+  target_include_directories(CheckLib INTERFACE ${Check_INCLUDE_DIR})
+  target_link_libraries(CheckLib INTERFACE ${Check_LIBRARY})
+else()
+  message(STATUS "Check NOT found")
+endif()

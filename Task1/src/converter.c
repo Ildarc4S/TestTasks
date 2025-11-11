@@ -2,7 +2,6 @@
 #include "utils.h"
 #include "converter_core.h"
 
-#include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,18 +33,19 @@ void CleanConfig() {
 }
 
 bool ParseArguments(int argc, char **argv) {
-  opterr = 0;
   int func_result = true;
   int option_used = false;
   ConverterConfig *config = GetConfig();
   int opt;
 
-  while ((opt = getopt(argc, argv, "a:b:h")) != -1 && func_result) {
+  GetOptState state = InitGetOptState();
+
+  while ((opt = GetOpt(argc, argv, "a:b:h", &state)) != -1 && func_result) {
     switch (opt) {
     case 'a':
       if (!option_used) {
         config->convert_to_bin = true;
-        config->input_filename = optarg;
+        config->input_filename = state.optarg;
         option_used = true;
       } else {
         SetError("Only one option can be used at a time");
@@ -55,7 +55,7 @@ bool ParseArguments(int argc, char **argv) {
     case 'b':
       if (!option_used) {
         config->convert_to_hex = true;
-        config->input_filename = optarg;
+        config->input_filename = state.optarg;
         option_used = true;
       } else {
         SetError("Only one option can be used at a time");
@@ -72,21 +72,21 @@ bool ParseArguments(int argc, char **argv) {
       }
       break;
     case '?':
-      if (optopt == 'a' || optopt == 'b') {
-        SetError("To use -%c option, you need a filename", optopt);
+      if (state.optopt == 'a' || state.optopt == 'b') {
+        SetError("To use -%c option, you need a filename", state.optopt);
       } else {
-        SetError("Unknown option: -%c", optopt);
+        SetError("Unknown option: -%c", state.optopt);
       }
       func_result = false;
       break;
     }
   }
 
-  if (func_result && optind < argc) {
-    if (!option_used && optind < argc) {
+  if (func_result && state.optind < argc) {
+    if (!option_used && state.optind < argc) {
       SetError("Invalid argument format");
     } else {
-      SetError("Number of arguments is exceeded: %s", argv[optind]);
+      SetError("Number of arguments is exceeded: %s", argv[state.optind]);
     }
     func_result = false;
   }

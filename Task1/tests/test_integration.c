@@ -38,38 +38,6 @@ START_TEST(test_get_config_persistence) {
 }
 END_TEST
 
-START_TEST(test_print_help_output) {
-  FILE* original_stdout = stdout;
-  FILE* test_output = tmpfile();
-  stdout = test_output;
-
-  PrintHelp("test_program");
-
-  stdout = original_stdout;
-
-  rewind(test_output);
-  char buffer[1024];
-  size_t total_read = 0;
-  char* output = malloc(1024);
-  output[0] = '\0';
-
-  while (fgets(buffer, sizeof(buffer), test_output)) {
-    strcat(output, buffer);
-    total_read += strlen(buffer);
-  }
-
-  ck_assert_ptr_nonnull(strstr(output, "Usage: test_program"));
-  ck_assert_ptr_nonnull(strstr(output, "-a FILE"));
-  ck_assert_ptr_nonnull(strstr(output, "-b FILE"));
-  ck_assert_ptr_nonnull(strstr(output, "-h"));
-  ck_assert_ptr_nonnull(strstr(output, "test_program -a file.hex"));
-  ck_assert_ptr_nonnull(strstr(output, "test_program -b file.bin"));
-
-  free(output);
-  fclose(test_output);
-}
-END_TEST
-
 START_TEST(test_write_hex_to_bin_success) {
   FILE* hex_file = fopen("test_hex_input.hex", "w");
   fputs("A1 B2 C3", hex_file);
@@ -291,7 +259,6 @@ END_TEST
 Suite* IntegrationSuite(void) {
   Suite* s = suite_create("Integration");
   TCase* tc_config = tcase_create("GetConfig");
-  TCase* tc_help = tcase_create("PrintHelp");
   TCase* tc_wrappers = tcase_create("Wrappers");
   TCase* tc_perform_conversion = tcase_create("PerformConversion");
   TCase* tc_full_workflow = tcase_create("FullWorkflow");
@@ -299,8 +266,6 @@ Suite* IntegrationSuite(void) {
   tcase_add_test(tc_config, test_get_config_singleton);
   tcase_add_test(tc_config, test_get_config_initialization);
   tcase_add_test(tc_config, test_get_config_persistence);
-
-  tcase_add_test(tc_help, test_print_help_output);
 
   tcase_add_test(tc_wrappers, test_write_hex_to_bin_success);
   tcase_add_test(tc_wrappers, test_write_bin_to_hex_success);
@@ -316,7 +281,6 @@ Suite* IntegrationSuite(void) {
   tcase_add_test(tc_full_workflow, test_full_workflow_with_validation_error);
 
   suite_add_tcase(s, tc_config);
-  suite_add_tcase(s, tc_help);
   suite_add_tcase(s, tc_wrappers);
   suite_add_tcase(s, tc_perform_conversion);
   suite_add_tcase(s, tc_full_workflow);

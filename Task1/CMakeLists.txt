@@ -5,6 +5,13 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CONVERTERLIB converter_lib)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+set(PROJECT_INCLUDE_DIR 
+  ${CMAKE_SOURCE_DIR}/include
+)
+
 option(COVERAGE "Enable code coverage reporting" OFF)
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -26,7 +33,7 @@ add_library(${CONVERTERLIB} STATIC
   src/utils.c
 )
 
-target_include_directories(${CONVERTERLIB} PUBLIC include)
+target_include_directories(${CONVERTERLIB} PUBLIC ${PROJECT_INCLUDE_DIR})
 
 add_executable(${PROJECT_NAME}
   src/main.c

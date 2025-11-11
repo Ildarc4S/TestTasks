@@ -1,3 +1,5 @@
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 if(WIN32)
   find_library(Check_LIBRARY NAMES check libcheck.a)
 else()
@@ -30,7 +32,7 @@ if(Check_INCLUDE_DIR AND Check_LIBRARY)
     test_integration.c
   )
 
-  target_include_directories(${PROJECT_NAME}_tests PRIVATE ../include)
+  target_include_directories(${PROJECT_NAME}_tests PRIVATE ${PROJECT_INCLUDE_DIR})
   target_link_libraries(${PROJECT_NAME}_tests ${CONVERTERLIB} CheckLib)
 
   target_compile_options(${PROJECT_NAME}_tests PRIVATE ${COMMON_FLAGS})

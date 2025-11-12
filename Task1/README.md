@@ -12,10 +12,10 @@
 ## Использование:
 ```bash
 # HEX to BIN
-./build/bin/Converter -a input.hex
+./build/bin/Converter -a example_files/file.hex
 
 # BIN to HEX  
-./build/bin/Converter -b input.bin
+./build/bin/Converter -b example_files/file.bin
 
 # Справка
 ./build/bin/Converter -h

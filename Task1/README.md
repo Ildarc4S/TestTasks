@@ -73,7 +73,7 @@ cmake --build build --target format
 
 **Проверка стиля:**
 ```bash
-cmake --build build --target check-format
+cmake --build build --target clang-format-check
 ```
 
 **Проверка памяти:**

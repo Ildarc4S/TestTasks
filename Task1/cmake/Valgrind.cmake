@@ -7,7 +7,7 @@ if(VALGRIND)
     COMMAND ${VALGRIND} 
       --leak-check=full 
       --error-exitcode=1 
-      ./tests/${PROJECT_NAME}_tests
+      $<TARGET_FILE:${PROJECT_NAME}_tests>
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${PROJECT_NAME}_tests
     COMMENT "Running valgrind memory check on Check tests"

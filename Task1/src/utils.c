@@ -20,8 +20,8 @@ GetOptState InitGetOptState() {
                        GETOPT_INITIAL_OPTOPT};
 }
 
-void HandleOption(int argc, char **argv, const char *pos, char *current_arg,
-                  GetOptState *state, int *func_result) {
+void HandleGetOption(int argc, char **argv, const char *pos, char *current_arg,
+                     GetOptState *state, int *func_result) {
   if (pos == NULL) {
     *func_result = '?';
   } else if (pos[1] == ':') {
@@ -66,7 +66,7 @@ int GetOpt(int argc, char **argv, const char *optstring, GetOptState *state) {
       func_result = optchar;
 
       const char *pos = strchr(optstring, optchar);
-      HandleOption(argc, argv, pos, current_arg, state, &func_result);
+      HandleGetOption(argc, argv, pos, current_arg, state, &func_result);
     }
   }
 

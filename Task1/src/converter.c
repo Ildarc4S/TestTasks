@@ -39,6 +39,51 @@ void CleanConfig() {
   config->error_message[0] = '\0';
 }
 
+void HandleOption(int opt, ConverterConfig *config, char *optarg) {
+  switch (opt) {
+    case 'a':
+      config->convert_to_bin = true;
+      config->input_filename = optarg;
+      break;
+    case 'b':
+      config->convert_to_hex = true;
+      config->input_filename = optarg;
+      break;
+    case 'h':
+      config->show_help = true;
+      break;
+  }
+}
+
+void HandleOptionError(int optopt) {
+  if (optopt == 'a' || optopt == 'b') {
+    SetError("To use -%c option, you need a filename", optopt);
+  } else {
+    SetError("Unknown option: -%c", optopt);
+  }
+}
+
+bool ValidateRemainingArguments(int argc, char **argv, int optind,
+                                int option_used) {
+  bool func_result = true;
+
+  if (optind < argc) {
+    if (!option_used) {
+      SetError("Invalid argument format");
+    } else {
+      SetError("Number of arguments is exceeded: %s", argv[optind]);
+    }
+    func_result = false;
+  }
+
+  if (func_result && argc == 1) {
+    SetError("No arguments provided");
+    func_result = false;
+  }
+
+  return func_result;
+}
+
 bool ParseArguments(int argc, char **argv) {
   int func_result = true;
   int option_used = false;
@@ -50,28 +95,10 @@ bool ParseArguments(int argc, char **argv) {
   while ((opt = GetOpt(argc, argv, "a:b:h", &state)) != -1 && func_result) {
     switch (opt) {
       case 'a':
-        if (!option_used) {
-          config->convert_to_bin = true;
-          config->input_filename = state.optarg;
-          option_used = true;
-        } else {
-          SetError("Only one option can be used at a time");
-          func_result = false;
-        }
-        break;
       case 'b':
-        if (!option_used) {
-          config->convert_to_hex = true;
-          config->input_filename = state.optarg;
-          option_used = true;
-        } else {
-          SetError("Only one option can be used at a time");
-          func_result = false;
-        }
-        break;
       case 'h':
         if (!option_used) {
-          config->show_help = true;
+          HandleOption(opt, config, state.optarg);
           option_used = true;
         } else {
           SetError("Only one option can be used at a time");
@@ -79,28 +106,15 @@ bool ParseArguments(int argc, char **argv) {
         }
         break;
       case '?':
-        if (state.optopt == 'a' || state.optopt == 'b') {
-          SetError("To use -%c option, you need a filename", state.optopt);
-        } else {
-          SetError("Unknown option: -%c", state.optopt);
-        }
+        HandleOptionError(state.optopt);
         func_result = false;
         break;
     }
   }
 
-  if (func_result && state.optind < argc) {
-    if (!option_used && state.optind < argc) {
-      SetError("Invalid argument format");
-    } else {
-      SetError("Number of arguments is exceeded: %s", argv[state.optind]);
-    }
-    func_result = false;
-  }
-
-  if (func_result && argc == 1) {
-    SetError("No arguments provided");
-    func_result = false;
+  if (func_result) {
+    func_result =
+        ValidateRemainingArguments(argc, argv, state.optind, option_used);
   }
 
   return func_result;
